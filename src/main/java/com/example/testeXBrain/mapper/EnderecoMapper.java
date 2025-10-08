@@ -9,7 +9,7 @@ public class EnderecoMapper {
 
     public Endereco toEntity(EnderecoRequest request) {
         var endereco = new Endereco();
-        endereco.setEndereco(request.getEndereco());
+        endereco.setId(request.getId());
         return endereco;
     }
 }

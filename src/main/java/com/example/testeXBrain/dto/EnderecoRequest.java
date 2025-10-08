@@ -5,5 +5,5 @@ import lombok.Data;
 @Data
 public class EnderecoRequest {
 
-    private String endereco;
+    private Integer id;
 }

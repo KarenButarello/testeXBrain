@@ -1,6 +1,7 @@
 package com.example.testeXBrain.service;
 
 import com.example.testeXBrain.dto.PedidoRequest;
+import com.example.testeXBrain.exception.NotFoundException;
 import com.example.testeXBrain.mapper.EnderecoMapper;
 import com.example.testeXBrain.model.Pedido;
 import com.example.testeXBrain.model.Produto;
@@ -34,22 +35,22 @@ public class PedidoService {
 
     public Pedido gerarNovoPedido(PedidoRequest request) {
         var endereco = enderecoRepository
-                .findByEndereco(request.getCliente().getEndereco().getEndereco())
-                .orElseThrow(() -> new RuntimeException("Endereço não encontrado"));
+                .findById(request.getCliente().getEndereco().getId())
+                .orElseThrow(() -> new NotFoundException("Endereço não encontrado"));
 
         var cliente = clienteRepository
                 .findByEnderecoId(endereco.getId())
-                .orElseThrow(() -> new RuntimeException("Cliente não encontrado"));
+                .orElseThrow(() -> new NotFoundException("Cliente não encontrado"));
 
         List<Produto> produtos = request.getProdutos().stream()
                 .map(produtoRequest1 -> produtoRepository.findByDescricao(produtoRequest1.getDescricao())
-                        .orElseThrow(() -> new RuntimeException("Produto não encontrado")))
+                        .orElseThrow(() -> new NotFoundException("Produto não encontrado")))
                 .toList();
 
         var enderecoEntrega = enderecoMapper.toEntity(request.getEnderecoEntrega());
 
-        var enderecoRegistrado = enderecoRepository.findByEndereco(enderecoEntrega.getEndereco())
-                .orElseThrow(() -> new RuntimeException("Endereço de entrega não encontrado"));
+        var enderecoRegistrado = enderecoRepository.findById(enderecoEntrega.getId())
+                .orElseThrow(() -> new NotFoundException("Endereço de entrega não encontrado"));
 
         var valorTotalPedido = calcularValorTotalPedido(produtos);
 
