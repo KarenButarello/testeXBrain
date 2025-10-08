@@ -1,0 +1,73 @@
+package com.example.testeXBrain.service;
+
+import com.example.testeXBrain.dto.PedidoRequest;
+import com.example.testeXBrain.mapper.EnderecoMapper;
+import com.example.testeXBrain.model.Pedido;
+import com.example.testeXBrain.model.Produto;
+import com.example.testeXBrain.repository.*;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.math.BigDecimal;
+import java.util.List;
+
+@Service
+public class PedidoService {
+
+    @Autowired
+    private PedidoRepository pedidoRepository;
+
+    @Autowired
+    private ClienteRepository clienteRepository;
+
+    @Autowired
+    private ProdutoRepository produtoRepository;
+
+    @Autowired
+    private EnderecoRepository enderecoRepository;
+
+    @Autowired
+    private EntregaRepository entregaRepository;
+
+    @Autowired
+    private EnderecoMapper enderecoMapper;
+
+    public Pedido gerarNovoPedido(PedidoRequest request) {
+        var endereco = enderecoRepository
+                .findByEndereco(request.getCliente().getEndereco().getEndereco())
+                .orElseThrow(() -> new RuntimeException("Endereço não encontrado"));
+
+        var cliente = clienteRepository
+                .findByEnderecoId(endereco.getId())
+                .orElseThrow(() -> new RuntimeException("Cliente não encontrado"));
+
+        List<Produto> produtos = request.getProdutos().stream()
+                .map(produtoRequest1 -> produtoRepository.findByDescricao(produtoRequest1.getDescricao())
+                        .orElseThrow(() -> new RuntimeException("Produto não encontrado")))
+                .toList();
+
+        var enderecoEntrega = enderecoMapper.toEntity(request.getEnderecoEntrega());
+
+        var enderecoRegistrado = enderecoRepository.findByEndereco(enderecoEntrega.getEndereco())
+                .orElseThrow(() -> new RuntimeException("Endereço de entrega não encontrado"));
+
+        var valorTotalPedido = calcularValorTotalPedido(produtos);
+
+        var pedido = new Pedido();
+        pedido.setCliente(cliente);
+        pedido.setProduto(produtos);
+        pedido.setValorTotalPedido(valorTotalPedido);
+        pedido.setEnderecoEntrega(enderecoRegistrado);
+
+        return pedidoRepository.save(pedido);
+    }
+
+    private BigDecimal calcularValorTotalPedido(List<Produto> produto) {
+        if (produto.size() == 1) {
+            return produto.get(0).getValor();
+        }
+        return produto.stream()
+                .map(Produto::getValor)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
+}
