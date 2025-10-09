@@ -3,7 +3,6 @@ package com.example.testeXBrain.service;
 import com.example.testeXBrain.dto.PedidoRequest;
 import com.example.testeXBrain.dto.PedidoResponse;
 import com.example.testeXBrain.exception.NotFoundException;
-import com.example.testeXBrain.mapper.EnderecoMapper;
 import com.example.testeXBrain.mapper.PedidoMapper;
 import com.example.testeXBrain.model.Pedido;
 import com.example.testeXBrain.model.Produto;
@@ -33,31 +32,17 @@ public class PedidoService {
     private EntregaRepository entregaRepository;
 
     @Autowired
-    private EnderecoMapper enderecoMapper;
-
-    @Autowired
     private PedidoMapper pedidoMapper;
 
     public PedidoResponse gerarNovoPedido(PedidoRequest request) {
-        var endereco = enderecoRepository
-                .findById(request.getCliente().getEndereco().getId())
-                .orElseThrow(() -> new NotFoundException("Endereço não encontrado"));
-
         var cliente = clienteRepository
-                .findByEnderecoId(endereco.getId())
+                .findById(request.getCliente().getId())
                 .orElseThrow(() -> new NotFoundException("Cliente não encontrado"));
-
-        validarProdutos(request);
 
         List<Produto> produtos = request.getProdutos().stream()
                 .map(produtoRequest -> produtoRepository.findById(produtoRequest.getId())
-                        .orElseThrow(() -> new NotFoundException("Produto não encontrado")))
+                        .orElseThrow(() -> new NotFoundException("Produto não encontrado: " + produtoRequest.getId())))
                 .toList();
-
-        var enderecoEntrega = enderecoMapper.toEntity(request.getEnderecoEntrega());
-
-        var enderecoRegistrado = enderecoRepository.findById(enderecoEntrega.getId())
-                .orElseThrow(() -> new NotFoundException("Endereço de entrega não encontrado"));
 
         var valorTotalPedido = calcularValorTotalPedido(produtos);
 
@@ -65,7 +50,7 @@ public class PedidoService {
         pedido.setCliente(cliente);
         pedido.setProduto(produtos);
         pedido.setValorTotalPedido(valorTotalPedido);
-        pedido.setEnderecoEntrega(enderecoRegistrado);
+        pedido.setEnderecoEntrega(cliente.getEndereco());
 
         var pedidoSalvo = pedidoRepository.save(pedido);
 
@@ -73,17 +58,8 @@ public class PedidoService {
     }
 
     private BigDecimal calcularValorTotalPedido(List<Produto> produto) {
-        if (produto.size() == 1) {
-            return produto.get(0).getValor();
-        }
         return produto.stream()
                 .map(Produto::getValor)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
-    }
-
-    private void validarProdutos(PedidoRequest request) {
-        if (request.getProdutos() == null || request.getProdutos().isEmpty()) {
-            throw new NotFoundException("Por favor, informe os produtos desejados");
-        }
     }
 }

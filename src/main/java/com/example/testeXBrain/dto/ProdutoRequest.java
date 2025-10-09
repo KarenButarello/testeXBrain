@@ -1,13 +1,11 @@
 package com.example.testeXBrain.dto;
 
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
-
-import java.math.BigDecimal;
 
 @Data
 public class ProdutoRequest {
 
+    @NotNull(message = " Por favor, informe o produto desejado")
     private Integer id;
-    private String descricao;
-    private BigDecimal valor;
 }
