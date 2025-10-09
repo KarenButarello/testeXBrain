@@ -1,7 +1,7 @@
 package com.example.testeXBrain.controller;
 
 import com.example.testeXBrain.dto.PedidoRequest;
-import com.example.testeXBrain.model.Pedido;
+import com.example.testeXBrain.dto.PedidoResponse;
 import com.example.testeXBrain.service.PedidoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -17,7 +17,7 @@ public class PedidoController {
     private PedidoService service;
 
     @PostMapping
-    public Pedido gerarNovoPedido(@RequestBody PedidoRequest request) {
+    public PedidoResponse gerarNovoPedido(@RequestBody PedidoRequest request) {
         return service.gerarNovoPedido(request);
     }
 }

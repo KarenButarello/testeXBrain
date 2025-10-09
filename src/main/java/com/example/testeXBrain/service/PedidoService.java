@@ -1,8 +1,10 @@
 package com.example.testeXBrain.service;
 
 import com.example.testeXBrain.dto.PedidoRequest;
+import com.example.testeXBrain.dto.PedidoResponse;
 import com.example.testeXBrain.exception.NotFoundException;
 import com.example.testeXBrain.mapper.EnderecoMapper;
+import com.example.testeXBrain.mapper.PedidoMapper;
 import com.example.testeXBrain.model.Pedido;
 import com.example.testeXBrain.model.Produto;
 import com.example.testeXBrain.repository.*;
@@ -33,7 +35,10 @@ public class PedidoService {
     @Autowired
     private EnderecoMapper enderecoMapper;
 
-    public Pedido gerarNovoPedido(PedidoRequest request) {
+    @Autowired
+    private PedidoMapper pedidoMapper;
+
+    public PedidoResponse gerarNovoPedido(PedidoRequest request) {
         var endereco = enderecoRepository
                 .findById(request.getCliente().getEndereco().getId())
                 .orElseThrow(() -> new NotFoundException("Endereço não encontrado"));
@@ -62,7 +67,9 @@ public class PedidoService {
         pedido.setValorTotalPedido(valorTotalPedido);
         pedido.setEnderecoEntrega(enderecoRegistrado);
 
-        return pedidoRepository.save(pedido);
+        var pedidoSalvo = pedidoRepository.save(pedido);
+
+        return pedidoMapper.toResponse(pedidoSalvo);
     }
 
     private BigDecimal calcularValorTotalPedido(List<Produto> produto) {
