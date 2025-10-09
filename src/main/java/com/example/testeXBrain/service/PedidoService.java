@@ -42,8 +42,10 @@ public class PedidoService {
                 .findByEnderecoId(endereco.getId())
                 .orElseThrow(() -> new NotFoundException("Cliente não encontrado"));
 
+        validarProdutos(request);
+
         List<Produto> produtos = request.getProdutos().stream()
-                .map(produtoRequest1 -> produtoRepository.findByDescricao(produtoRequest1.getDescricao())
+                .map(produtoRequest -> produtoRepository.findById(produtoRequest.getId())
                         .orElseThrow(() -> new NotFoundException("Produto não encontrado")))
                 .toList();
 
@@ -70,5 +72,11 @@ public class PedidoService {
         return produto.stream()
                 .map(Produto::getValor)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
+
+    private void validarProdutos(PedidoRequest request) {
+        if (request.getProdutos() == null || request.getProdutos().isEmpty()) {
+            throw new NotFoundException("Por favor, informe os produtos desejados");
+        }
     }
 }
