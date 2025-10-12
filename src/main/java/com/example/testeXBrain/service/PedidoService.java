@@ -1,12 +1,16 @@
 package com.example.testeXBrain.service;
 
+import com.example.testeXBrain.config.constants.RabbitMQConstants;
+import com.example.testeXBrain.dto.EntregaRequest;
 import com.example.testeXBrain.dto.PedidoRequest;
 import com.example.testeXBrain.dto.PedidoResponse;
 import com.example.testeXBrain.exception.NotFoundException;
 import com.example.testeXBrain.mapper.PedidoMapper;
+import com.example.testeXBrain.model.Entrega;
 import com.example.testeXBrain.model.Pedido;
 import com.example.testeXBrain.model.Produto;
 import com.example.testeXBrain.repository.*;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -34,6 +38,11 @@ public class PedidoService {
     @Autowired
     private PedidoMapper pedidoMapper;
 
+    @Autowired
+    private RabbitTemplate rabbitTemplate;
+
+    @Autowired EntregaService entregaService;
+
     public PedidoResponse gerarNovoPedido(PedidoRequest request) {
         var cliente = clienteRepository
                 .findById(request.getCliente().getId())
@@ -54,6 +63,8 @@ public class PedidoService {
 
         var pedidoSalvo = pedidoRepository.save(pedido);
 
+        enviarMensagem(new EntregaRequest(pedidoSalvo.getId()));
+
         return pedidoMapper.toResponse(pedidoSalvo);
     }
 
@@ -61,5 +72,17 @@ public class PedidoService {
         return produto.stream()
                 .map(Produto::getValor)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
+
+    private void enviarMensagem(Object mensagem) {
+        this.rabbitTemplate.convertAndSend(
+                RabbitMQConstants.EXCHANGE,
+                RabbitMQConstants.FILA,
+                mensagem
+        );
+    }
+
+    public Entrega buscarEntrega(Integer id) {
+        return entregaRepository.findById(id).orElseThrow(() -> new NotFoundException("Entrega não encontrada"));
     }
 }

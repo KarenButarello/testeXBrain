@@ -1,6 +1,5 @@
 package com.example.testeXBrain.dto;
 
-import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -8,8 +7,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class ProdutoRequest {
+public class EntregaRequest {
 
-    @NotNull(message = " Por favor, informe o produto desejado")
-    private Integer id;
+    private Integer pedidoId;
 }

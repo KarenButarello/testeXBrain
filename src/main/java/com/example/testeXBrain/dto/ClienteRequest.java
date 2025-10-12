@@ -1,16 +1,15 @@
 package com.example.testeXBrain.dto;
 
-import com.example.testeXBrain.model.Endereco;
-import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class ClienteRequest {
 
     @NotNull(message = "Por favor, informe o id do cliente")
     private Integer id;
-
-    @Valid
-    private Endereco endereco;
 }
