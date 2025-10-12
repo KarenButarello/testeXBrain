@@ -68,6 +68,11 @@ public class PedidoService {
         return pedidoMapper.toResponse(pedidoSalvo);
     }
 
+    public Pedido buscarPedido(Integer id) {
+        return pedidoRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Pedido não encontrado com o id: " + id));
+    }
+
     private BigDecimal calcularValorTotalPedido(List<Produto> produto) {
         return produto.stream()
                 .map(Produto::getValor)
