@@ -1,16 +1,19 @@
 package com.example.testeXBrain.service;
 
-import com.example.testeXBrain.dto.*;
+import com.example.testeXBrain.config.constants.RabbitMQConstants;
+import com.example.testeXBrain.dto.EntregaRequest;
 import com.example.testeXBrain.exception.NotFoundException;
 import com.example.testeXBrain.mapper.PedidoMapper;
-
 import com.example.testeXBrain.model.Pedido;
-import com.example.testeXBrain.repository.*;
+import com.example.testeXBrain.repository.ClienteRepository;
+import com.example.testeXBrain.repository.PedidoRepository;
+import com.example.testeXBrain.repository.ProdutoRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -39,6 +42,9 @@ public class PedidoServiceTest {
     @Mock
     private PedidoMapper pedidoMapper;
 
+    @Mock
+    private RabbitTemplate rabbitTemplate;
+
     @Test
     void gerarNovoPedido_deveGerarNovoPedido_quandoTodosOsCamposPreenchidosEUmProduto() {
         when(clienteRepository.findById(1)).thenReturn(Optional.of(umCliente()));
@@ -59,6 +65,11 @@ public class PedidoServiceTest {
         verify(produtoRepository, times(1)).findById(1);
         verify(pedidoRepository, times(1)).save(any(Pedido.class));
         verify(pedidoMapper, times(1)).toResponse(any(Pedido.class));
+        verify(rabbitTemplate, times(1)).convertAndSend(
+                eq(RabbitMQConstants.EXCHANGE),
+                eq(RabbitMQConstants.FILA),
+                any(EntregaRequest.class)
+        );
     }
 
     @Test
@@ -87,6 +98,11 @@ public class PedidoServiceTest {
         verify(produtoRepository, times(1)).findById(3);
         verify(pedidoRepository, times(1)).save(any(Pedido.class));
         verify(pedidoMapper, times(1)).toResponse(any(Pedido.class));
+        verify(rabbitTemplate, times(1)).convertAndSend(
+                eq(RabbitMQConstants.EXCHANGE),
+                eq(RabbitMQConstants.FILA),
+                any(EntregaRequest.class)
+        );
     }
 
     @Test

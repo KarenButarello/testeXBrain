@@ -101,7 +101,6 @@ public class TestHelper {
     public static ClienteRequest umClienteRequest() {
         var clienteRequest = new ClienteRequest();
         clienteRequest.setId(1);
-        clienteRequest.setEndereco(umEnderecoCliente());
         return clienteRequest;
     }
 
