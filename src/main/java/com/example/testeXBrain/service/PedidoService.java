@@ -6,7 +6,6 @@ import com.example.testeXBrain.dto.PedidoRequest;
 import com.example.testeXBrain.dto.PedidoResponse;
 import com.example.testeXBrain.exception.NotFoundException;
 import com.example.testeXBrain.mapper.PedidoMapper;
-import com.example.testeXBrain.model.Entrega;
 import com.example.testeXBrain.model.Pedido;
 import com.example.testeXBrain.model.Produto;
 import com.example.testeXBrain.repository.*;
@@ -30,18 +29,10 @@ public class PedidoService {
     private ProdutoRepository produtoRepository;
 
     @Autowired
-    private EnderecoRepository enderecoRepository;
-
-    @Autowired
-    private EntregaRepository entregaRepository;
-
-    @Autowired
     private PedidoMapper pedidoMapper;
 
     @Autowired
     private RabbitTemplate rabbitTemplate;
-
-    @Autowired EntregaService entregaService;
 
     public PedidoResponse gerarNovoPedido(PedidoRequest request) {
         var cliente = clienteRepository
@@ -85,9 +76,5 @@ public class PedidoService {
                 RabbitMQConstants.FILA,
                 mensagem
         );
-    }
-
-    public Entrega buscarEntrega(Integer id) {
-        return entregaRepository.findById(id).orElseThrow(() -> new NotFoundException("Entrega não encontrada"));
     }
 }
